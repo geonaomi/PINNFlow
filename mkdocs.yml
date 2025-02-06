@@ -1,7 +1,7 @@
 site_name: PinnFlow Documentation
 
 theme:
-  name: "material"
+  name: "readthedocs"
 
 plugins:
 - mkdocstrings:
@@ -10,4 +10,11 @@ plugins:
         paths: [src]  # search packages in the src folder
 
 nav:
-  - Index: index.md
+  - Home: index.md
+  - Installation : install.md
+  - Loading Data : data.md
+  - Defining Neural Networks : nn.md
+  - Training : train.md
+  - Examples : examples.md
+  - Change log : changelog.md
+  - License : license.md
