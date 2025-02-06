@@ -23,24 +23,34 @@ def data_generator(file_name, year, month =1, day =1, Nmax = 13, dy = 30, dx = 5
 	----------
 	file_name : str
 		Filepath and name of the MAT-file
+          
 	year : int, ndarray
-	month : int, ndarray, optional
+	
+    month : int, ndarray, optional
 		Defaults to 1 (January)
-	day : int, ndarray, optional
+	
+    day : int, ndarray, optional
 		Defaults to 1
-	Nmax : int, positive
+	
+    Nmax : int, positive
 		Maximum Degree of the Spherical Harmonic Expansion, default 13
-	dy : int, positive, optional
+	
+    dy : int, positive, optional
 		Number of grid points in the theta direction, default 30
-	dx : int, positive, optional
+	
+    dx : int, positive, optional
 		Number of grid points in the phi direction, default 55
-	clat1 : ndarray, float
+	
+    clat1 : ndarray, float
 		Colatitude, in degrees, of the upper boundary of the grid box
-	clat2 : ndarray, float
+	
+    clat2 : ndarray, float
 		Colatitude, in degrees, of the lower boundary of the grid box	
-	long1 : ndarray, float
+	
+    long1 : ndarray, float
 		Longitude, in degrees, of the left boundary of the grid box
-	long2 : ndarray, float
+	
+    long2 : ndarray, float
 		Longitude, in degrees, of the right boundary of the grid box
 		
 	Returns

@@ -1,1 +1,3 @@
-## Loading in data
+# Loading in data
+
+::: pinnflow.source.data_generator

@@ -1,1 +1,3 @@
-## Training
+# Training
+
+::: pinnflow.source.train
