@@ -1,0 +1,28 @@
+[build-system]
+requires = ["setuptools>=61.0", "setuptools-scm"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pinnflow"
+description = ""
+version = "0.0.1"
+readme = "README.md"
+authors = [
+{ name="Naomi Shakespeare-Rees", email="eenmsr@leeds.ac.uk" },
+]
+requires-python = ">=3.10"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+dependencies = [
+    "numpy>=1.21.2",
+]
+
+[project.optional-dependencies]
+test = [
+    "pytest==6.2.5",
+]
+
+This file contains metadata about your project, such as the name, version, and author. It also specifies the required Python version and any dependencies your project may have. You might need to add to this, or change/add dependencies. We have added a specific version of numpy and pytest to demonstrate the syntax. You can find more information about the pyproject.toml file here.
