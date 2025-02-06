@@ -21,7 +21,7 @@ def data_generator(file_name, year, month =1, day =1, Nmax = 13, dy = 30, dx = 5
 	
 	Parameters
 	----------
-	file_name : str
+    file_name : str
 		Filepath and name of the MAT-file
           
 	year : int, ndarray
