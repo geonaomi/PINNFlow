@@ -1,8 +1,5 @@
 # Loading in data
 
-## Data Generator
-
-
 Function to compute:
 
 * Radial Magnetic Field
@@ -20,7 +17,7 @@ radius_DATA, phi_data, theta_data, Br_data, Br_dot_data, horiz_div_theta, horiz_
                 clat1 = None, clat2 = None, long1 = None, long2 = None)
 ```
 
-##### Arguments
+### Arguments
 
 * `file_name` : *string* 
 > Filepath and name of the MAT-file.
@@ -55,7 +52,7 @@ radius_DATA, phi_data, theta_data, Br_data, Br_dot_data, horiz_div_theta, horiz_
 > Longitude, in degrees, of the right boundary of the grid box.
 
 
-##### Returns
+### Returns
 
 * `radius_data`, `theta_data`, `phi_data` : *ndarray*, shape `(dy, dx)`
 > Radial, Theta, and Phi coordinates, each of shape (dx, dy).
@@ -74,7 +71,7 @@ radius_DATA, phi_data, theta_data, Br_data, Br_dot_data, horiz_div_theta, horiz_
 > Phi component of the horizontal divergence of the radial field component, given in &mu;T/km
 
 
-##### Notes
+### Notes
 
 
 Re-scaling needed to ensure all inputs and outputs to the PINN are of the order one.
@@ -89,5 +86,5 @@ To do this:
 * horiz_div_theta, horiz_div_phi are recaled from nT/m to &mu;T/km
 	
 
-##### Source
+### Source
 
