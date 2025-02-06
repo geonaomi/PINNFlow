@@ -18,6 +18,11 @@ classifiers = [
 ]
 dependencies = [
     "numpy>=1.21.2",
+    - pip
+  - pip:
+    - mkdocs
+    - "mkdocstrings[python]"
+    - mkdocs-material
 ]
 
 [project.optional-dependencies]
