@@ -83,7 +83,7 @@ model = NeuralNet(layers, lb, ub) #Defining blank NN model for T, P
 We define the number of training iterations, and empty arrays to record the loss:
 
 ```python
-Train_iterations = 100000 #value used in paper, can be changed.
+Train_iterations = 10000 #can be changed, value used in paper is 100_000 to ensure convergence
 
 loss_record = np.zeros(Train_iterations) #Total Loss
 loss_data_record = np.zeros(Train_iterations) #SV Loss
@@ -103,9 +103,9 @@ We can then plot the loss curves using:
 ```python
 plt.rcParams.update({'font.size': 25})
 fig, (ax1, ax2,ax3) = plt.subplots(1,3, figsize=(30,10))
-ax1.semilogy(datar, color = 'blue')
-ax2.semilogy(flowr, color = 'red')
-ax3.semilogy(lossr, color = 'green')
+ax1.semilogy(loss_data_record, color = 'blue')
+ax2.semilogy(loss_flows_record, color = 'red')
+ax3.semilogy(loss_record, color = 'green')
 ax1.set_title("$L_{SV}$ \n", size = 45)
 ax2.set_title("$L_{FC}$ \n", size = 45)
 ax3.set_title("$L_{TOTAL}$ \n", size = 45)
@@ -135,3 +135,4 @@ sv_pred = sv_flat.flatten().detach().numpy().reshape(Br_dot_data.shape)[5:-5, 5:
 Plotting these results:
 
 ![flows](perf_flows.png) 
+

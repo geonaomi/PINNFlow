@@ -16,5 +16,4 @@ nav:
   - Defining Neural Networks : nn.md
   - Training : train.md
   - Examples : examples.md
-  - Change log : changelog.md
   - License : license.md
