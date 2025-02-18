@@ -1,6 +1,6 @@
 # Examples
 
-This is some example code to find the horizontal flow at the CMB in a region underneath the Atlantic. This code is also available as a Jupyter notebook or a <a href="https://github.com/geonaomi/PINNFlow/blob/main/examples/PINNFlow_example.py"> Python Script</a>. 
+This is some example code to find the horizontal flow at the CMB in a region underneath the Atlantic. This code is also available as a <a href="https://github.com/geonaomi/PINNFlow/blob/main/examples/Example.ipynb"> Jupyter Notebook</a> or a <a href="https://github.com/geonaomi/PINNFlow/blob/main/examples/PINNFlow_example.py"> Python Script</a>. 
 
 ### Import Modules
 
