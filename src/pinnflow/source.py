@@ -9,8 +9,10 @@ import torch.nn as nn
 from torch.autograd import Variable
 import torch.optim as optim
 import time 
+import h5py
+import warnings
 
-def data_generator(file_name, year, month =1, day =1, Nmax = 13, dy = 30, dx = 55, clat1 = None, clat2 = None, long1 = None, long2 = None):
+def data_generator(file_name, year, month =1, day =1, Nmax = 13, dy = 30, dx = 55, clat1 = None, clat2 = None, long1 = None, long2 = None, mat_file = None):
 	r"""
 	Computes Radial Magnetic Field, Secular Variation, 
 	and the theta, phi components of the horizontal 
@@ -21,36 +23,26 @@ def data_generator(file_name, year, month =1, day =1, Nmax = 13, dy = 30, dx = 5
 	
 	Parameters
 	----------
-    file_name : str
+	file_name : str
 		Filepath and name of the MAT-file
-          
 	year : int, ndarray
-	
-    month : int, ndarray, optional
+	month : int, ndarray, optional
 		Defaults to 1 (January)
-	
-    day : int, ndarray, optional
+	day : int, ndarray, optional
 		Defaults to 1
-	
-    Nmax : int, positive
+	Nmax : int, positive
 		Maximum Degree of the Spherical Harmonic Expansion, default 13
-	
-    dy : int, positive, optional
+	dy : int, positive, optional
 		Number of grid points in the theta direction, default 30
-	
-    dx : int, positive, optional
+	dx : int, positive, optional
 		Number of grid points in the phi direction, default 55
-	
-    clat1 : ndarray, float
+	clat1 : ndarray, float
 		Colatitude, in degrees, of the upper boundary of the grid box
-	
-    clat2 : ndarray, float
+	clat2 : ndarray, float
 		Colatitude, in degrees, of the lower boundary of the grid box	
-	
-    long1 : ndarray, float
+	long1 : ndarray, float
 		Longitude, in degrees, of the left boundary of the grid box
-	
-    long2 : ndarray, float
+	long2 : ndarray, float
 		Longitude, in degrees, of the right boundary of the grid box
 		
 	Returns
@@ -79,38 +71,92 @@ def data_generator(file_name, year, month =1, day =1, Nmax = 13, dy = 30, dx = 5
 		- horiz_div_theta, horiz_div_phi are recaled from $nT/m$ to $\mu T/km$
 	
 	"""
-	
 	radius = 3485
-	cl1 = int(clat1)
-	cl2 = int(clat2)
-	l1 = int(long1)
-	l2 = int(long2)
-	theta = np.linspace(cl1, cl2, num=dy) # colatitude in degrees
-	phi = np.linspace(l1, l2, num=dx) # longitude in degrees
-	phi_grid, theta_grid = np.meshgrid(phi, theta)
-	radius_grid = radius*np.ones(phi_grid.shape) #grid of shape (dx, dy), with all values equal to radius
-	phi_data,theta_data = np.meshgrid(np.radians(phi),np.radians(theta)) #colat, longitude in radians
+	if file_name.endswith(".hdf5"):
+		if mat_file == None:
+			raise FileNotFoundError("No Matfile supplied, please supply matfile in format of CHAOS to proceed.")
+		else:
+			f = h5py.File(file_name, 'r')['SOLA']
+			snapshot = f['SNAPSHOT_'+str(year)+'_'+str(month)]
+			Br_dot = np.array(snapshot['sv'][1: -1])
+			theta_data = np.array(snapshot['theta'][1: -1])*np.pi/180
+			phi_data = (np.array(snapshot['phi'][1: -1]))*np.pi/180
+			radius_grid = radius*np.ones(phi_data.shape)
+			theta_deg = np.array(snapshot['theta'][1: -1])
+			phi_deg = np.array(snapshot['phi'][1: -1])
+			time = cp.data_utils.mjd2000(year, month, day)
+			model = cp.load_CHAOS_matfile(mat_file)
+			# Values on grid
+			Br, _,_ = model.synth_values_tdep(time, radius, theta_deg, phi_deg, grid=False,deriv = 0,nmax=Nmax)
+			gauss = model.synth_coeffs_tdep(time, nmax=Nmax, deriv = 0) 
+			gauss_ = gauss.copy()
+			k = 0
+			for l in range(1,Nmax+1): #l=1,2,3,...Nmax
+				for j in range(2*l+1): #l=1 has 3 coeffs, l=2 has 5 coefficients...
+					gauss_[k] = - gauss_[k] * (l+1) /(radius*10**3)
+					k+= 1
+			#Spatial derivatives on grid
+			horiz_div_rad, horiz_div_theta, horiz_div_phi = cp.model_utils.synth_values(gauss_, radius, theta_deg, phi_deg, grid=False) #in nT/m
 	
-	#Computes the modified Julian date as floating point number
-	time = cp.data_utils.mjd2000(year, month, day)
-	#Loading in model, with spherical harmonic degree Nmax
-	model = cp.load_CHAOS_matfile(file_name)
-	# Values on grid
-	Br, _,_ = model.synth_values_tdep(time, radius, theta, phi, grid=True,deriv = 0,nmax=Nmax) #in nT
-	Br_dot, _,_  = model.synth_values_tdep(time, radius, theta, phi, grid=True,deriv=1, nmax=Nmax) #in nT/year
-	#Compute Gauss coefficients for spatial derivatives 
-	gauss = model.synth_coeffs_tdep(time, nmax=Nmax, deriv = 0) 
-	gauss_ = gauss.copy()
-	k = 0
-	for l in range(1,Nmax+1): #l=1,2,3,...Nmax
-		for j in range(2*l+1): #l=1 has 3 coeffs, l=2 has 5 coefficients...
-			gauss_[k] = - gauss_[k] * (l+1) /(radius*10**3)
-			k+= 1
-	#Spatial derivatives on grid
-	horiz_div_rad, horiz_div_theta, horiz_div_phi = cp.model_utils.synth_values(gauss_, radius, theta, phi, grid=True) #in nT/m
-
+	else:
+		cl1 = int(clat1)
+		cl2 = int(clat2)
+		l1 = int(long1)
+		l2 = int(long2)
+		theta_deg = np.linspace(cl1, cl2, num=dy, endpoint=True) # colatitude in degrees
+		phi_deg = np.linspace(l1, l2, num=dx, endpoint=False) # longitude in degrees
+		phi_grid, theta_grid = np.meshgrid(phi_deg, theta_deg)
+		radius_grid = radius*np.ones(phi_grid.shape) #grid of shape (dx, dy), with all values equal to radius
+		phi_data,theta_data = np.meshgrid(np.radians(phi_deg),np.radians(theta_deg)) #colat, longitude in radians
+		
+		#Computes the modified Julian date as floating point number
+		time = cp.data_utils.mjd2000(year, month, day)
+		#Loading in model, with spherical harmonic degree Nmax
+		model = cp.load_CHAOS_matfile(file_name)
+		# Values on grid
+		Br, _,_ = model.synth_values_tdep(time, radius, theta_deg, phi_deg, grid=True,deriv = 0,nmax=Nmax) #in nT
+		Br_dot, _,_  = model.synth_values_tdep(time, radius, theta_deg, phi_deg, grid=True,deriv=1, nmax=Nmax) #in nT/year
+		#Compute Gauss coefficients for spatial derivatives 
+		gauss = model.synth_coeffs_tdep(time, nmax=Nmax, deriv = 0) 
+		gauss_ = gauss.copy()
+		k = 0
+		for l in range(1,Nmax+1): #l=1,2,3,...Nmax
+			for j in range(2*l+1): #l=1 has 3 coeffs, l=2 has 5 coefficients...
+				gauss_[k] = - gauss_[k] * (l+1) /(radius*10**3)
+				k+= 1
+		#Spatial derivatives on grid
+		horiz_div_rad, horiz_div_theta, horiz_div_phi = cp.model_utils.synth_values(gauss_, radius, theta_deg, phi_deg, grid=True) #in nT/m
+		
 	Br_data = Br/1e3 #units in microT
 	Br_dot_data = Br_dot/1e4 #units in microT/0.1year
+	
+	if any(np.round(theta) == 90.0 for theta in theta_deg):
+		
+		warnings.warn("Warning, theta_data contains values at the equator. This is not compatible with the TG flow assumption.", stacklevel=3)
+		inp = input(" Theta_data contains values at the equator. This is not compatible with the TG flow assumption, and will need to be removed  \n in order for the TG flow assumption to be applied. \n \n Would you like these values to be removed? This is not needed if you are not applying TG.  \n \n   'yes' or 'no'")
+		if inp == 'yes':
+			if Br_dot[0,:].shape[0] == 1:
+				radius_grid = np.delete(radius_grid, np.where(np.round(theta_deg)==90.0))
+				theta_data = np.delete(theta_data, np.where(np.round(theta_deg)==90.0))
+				phi_data = np.delete(phi_data, np.where(np.round(theta_deg)==90.0))
+				Br_data = np.delete(Br_data, np.where(np.round(theta_deg)==90.0))
+				Br_dot_data = np.delete(Br_dot_data, np.where(np.round(theta_deg)==90.0))
+				horiz_div_theta =  np.delete(horiz_div_theta, np.where(np.round(theta_deg)==90.0))
+				horiz_div_phi =  np.delete(horiz_div_phi, np.where(np.round(theta_deg)==90.0))
+			else:
+				theta_ = np.delete(theta_deg, np.where(np.round(theta_deg)==90.0))
+				phi_data,theta_data = np.meshgrid(np.radians(phi_deg),np.radians(theta_))
+				phi_test,theta_test = np.meshgrid(np.radians(phi_deg),np.radians(theta_deg))
+				coord = theta_test.flatten()
+				radius_grid = np.delete(radius_grid.flatten(), np.where(np.round(coord*180/np.pi)==90.0)).reshape(phi_data.shape)
+				Br_data = np.delete(Br_data.flatten(), np.where(np.round(coord*180/np.pi)==90.0)).reshape(phi_data.shape)
+				Br_dot_data = np.delete(Br_dot_data.flatten(), np.where(np.round(coord*180/np.pi)==90.0)).reshape(phi_data.shape)
+				horiz_div_theta =  np.delete(horiz_div_theta.flatten(), np.where(np.round(coord*180/np.pi)==90.0)).reshape(phi_data.shape)
+				horiz_div_phi =  np.delete(horiz_div_phi.flatten(), np.where(np.round(coord*180/np.pi)==90.0)).reshape(phi_data.shape)
+		else:
+			pass
+			
+	
 
 	return(radius_grid, phi_data, theta_data, Br_data, Br_dot_data, horiz_div_theta, horiz_div_phi)
 	
@@ -212,12 +258,12 @@ class PINNFlow(nn.Module):
         #Horizontal Flow at the CMB
         u_theta = (T_phi/torch.sin(self.theta)) + P_theta
         u_phi = (P_phi/torch.sin(self.theta))-T_theta 
-
+        
         #Calculating Horizontal Divergence
-        u_theta_theta = torch.autograd.grad(u_theta*torch.sin(self.theta), self.theta, grad_outputs=torch.ones_like(u_theta), create_graph=True, retain_graph=True )[0]
+        u_theta_theta = torch.autograd.grad(-u_theta*torch.sin(self.theta), self.theta, grad_outputs=torch.ones_like(u_theta), create_graph=True, retain_graph=True )[0]
         u_theta_theta_theta = torch.autograd.grad(u_theta_theta*torch.sin(self.theta), self.theta, grad_outputs=torch.ones_like(u_theta), create_graph=True, retain_graph=True )[0]
         
-        u_theta_phi = torch.autograd.grad(u_theta, self.phi, grad_outputs=torch.ones_like(u_theta), create_graph=True, retain_graph=True )[0]
+        u_theta_phi = torch.autograd.grad(-u_theta, self.phi, grad_outputs=torch.ones_like(u_theta), create_graph=True, retain_graph=True )[0]
         u_theta_phi_phi =  torch.autograd.grad(u_theta_phi, self.phi, grad_outputs=torch.ones_like(u_theta), create_graph=True, retain_graph=True )[0]
         
         u_phi_theta = torch.autograd.grad(u_phi*torch.sin(self.theta), self.theta, grad_outputs=torch.ones_like(u_theta), create_graph=True, retain_graph=True )[0]
@@ -231,10 +277,10 @@ class PINNFlow(nn.Module):
         #Calculating complexity
         u_theta_lap = ((1/self.radius**2 * torch.sin(self.theta)) *u_theta_theta_theta) + ((1/(self.radius * torch.sin(self.theta))**2)*u_theta_phi_phi)
         u_phi_lap = ((1/self.radius**2 * torch.sin(self.theta)) *u_phi_theta_theta) + ((1/(self.radius * torch.sin(self.theta))**2)*u_phi_phi_phi)
-        comp = u_theta_lap**2 + u_phi_lap**2
+        comp = torch.sin(self.theta)*(u_theta_lap**2 + u_phi_lap**2)
         
         #  SV loss
-        sv_out = -(u_theta*self.horiz_theta + u_phi*self.horiz_phi) + self.br*div_uh
+        sv_out = -(u_theta*self.horiz_theta + u_phi*self.horiz_phi) - self.br*div_uh
         #TG assumption: div_H (u cos(theta) ) = 0; can also be written div_h u_h - tan(theta)/c u_theta = 0
         tg_con = div_uh - (u_theta*torch.tan(self.theta)/self.radius)
 
@@ -269,6 +315,20 @@ def initialize_NN(layers):
         weights.append(layer)
     return weights
 
+
+def get_current_lr(optimizer, group_idx, parameter_idx):
+    # Adam has different learning rates for each paramter. So we need to pick the
+    # group and paramter first.
+    group = optimizer.param_groups[group_idx]
+    p = group['params'][parameter_idx]
+
+    beta1, _ = group['betas']
+    state = optimizer.state[p]
+
+    bias_correction1 = 1 - beta1 ** state['step']
+    current_lr = group['lr'] / bias_correction1
+    return current_lr
+    
 class NeuralNet(nn.Module):
     """
     Class to define Pytorch NN from layers, lower bound and upper bound of coordinates.
@@ -287,7 +347,7 @@ class NeuralNet(nn.Module):
         Y = self.weights[-1](H)
         return Y	
 	
-def train(nIter,model_name,radius_input, phi_input, theta_input, sv_input, horiz_theta_input, horiz_phi_input, br_input,  model, data_rec, flow_rec, loss_rec, learning_rate=0.001, lamda_f = 1000):
+def train(nIter,model_name,radius_input, phi_input, theta_input, sv_input, horiz_theta_input, horiz_phi_input, br_input,  model, data_rec, flow_rec, loss_rec,  lr_rec,learning_rate=0.001, lamda_f = 1000):
     r"""
     Function to train model, producing horizontal flows at the CMB that 
     fit both the SV data and the flow assumptions. 
@@ -347,10 +407,12 @@ def train(nIter,model_name,radius_input, phi_input, theta_input, sv_input, horiz
     optimizer = torch.optim.AdamW(model.parameters(), lr=1e-3, weight_decay = 1e-2)
     #This is updated as the model trains
     u_theta_pred, u_phi_pred, div_pred, sv_pred, tg_pred, comp = PINNFlow(radius_input, phi_input, theta_input, horiz_theta_input, horiz_phi_input, br_input,  model).net_sv()
+    
+    
 
        
     loss_data = criterion(sv_input*torch.sqrt(torch.sin(theta_input)), sv_pred*torch.sqrt(torch.sin(theta_input))) #SV LOSS
-    loss_flows = lamda_f*criterion(tg_pred*torch.sqrt(torch.sin(theta_input)), torch.zeros(tg_pred.shape)) #TG LOSS
+    loss_flows = lamda_f*criterion(tg_pred*(torch.sqrt(torch.sin(theta_input))), torch.zeros(tg_pred.shape)) #TG LOSS
     best_loss = loss_data + loss_flows
     start_time = time.time()
     
@@ -358,21 +420,25 @@ def train(nIter,model_name,radius_input, phi_input, theta_input, sv_input, horiz
         optimizer.zero_grad()
         #Calculating values at iteration it
         u_theta_pred, u_phi_pred, div_pred, sv_pred, tg_pred, comp = PINNFlow(radius_input, phi_input, theta_input, horiz_theta_input, horiz_phi_input, br_input,  model).net_sv()
-
-       
+        
         loss_data = criterion(sv_input*torch.sqrt(torch.sin(theta_input)), sv_pred*torch.sqrt(torch.sin(theta_input))) #SV LOSS
-        loss_flows = lamda_f*criterion(tg_pred*torch.sqrt(torch.sin(theta_input)), torch.zeros(tg_pred.shape)) #TG LOSS
-        loss_reg = 1000*criterion(comp*torch.sqrt(torch.sin(theta_input)), torch.zeros(tg_pred.shape)) #TG LOSS
-        loss = loss_data +loss_flows +loss_reg#TOTAL LOSS
+        loss_flows = lamda_f*criterion(tg_pred*(torch.sqrt(torch.sin(theta_input))), torch.zeros(tg_pred.shape)) #TG LOSS
+        #loss_reg = 1000*criterion(comp*torch.sqrt(torch.sin(theta_input)), torch.zeros(comp.shape)) 
+        loss = loss_data +loss_flows #+loss_reg #TOTAL LOSS
             
         #recording loss
         data_rec[it] = loss_data
         flow_rec[it] = loss_flows
         loss_rec[it] = loss
-
-        #Backpropagation
+        #lr_rec[it] = optimizer.state_dict()['param_groups'][0]['lr']
+        
+	#Backpropagation
         loss.backward()
         optimizer.step()
+        
+        group_idx, param_idx = 0, 0
+        current_lr = get_current_lr(optimizer, group_idx, param_idx)
+        lr_rec[it] = current_lr
         
         # Print every 50 iterations
         if it % 50 == 0:
