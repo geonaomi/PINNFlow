@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "pinnflow"
 description = ""
-version = "1.0.0"
+version = "1.0.7"
 readme = "README.md"
 authors = [
 { name="Naomi Shakespeare-Rees", email="eenmsr@leeds.ac.uk" },
@@ -22,7 +22,8 @@ dependencies = [
     "chaosmagpy",
     "torch",
     "matplotlib",
-    "cartopy"
+    "cartopy", 
+    "scikit-learn"
 ]
 
 [project.optional-dependencies]

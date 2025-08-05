@@ -314,20 +314,6 @@ def initialize_NN(layers):
         layer = XavierInit(size=[layers[l], layers[l + 1]])
         weights.append(layer)
     return weights
-
-
-def get_current_lr(optimizer, group_idx, parameter_idx):
-    # Adam has different learning rates for each paramter. So we need to pick the
-    # group and paramter first.
-    group = optimizer.param_groups[group_idx]
-    p = group['params'][parameter_idx]
-
-    beta1, _ = group['betas']
-    state = optimizer.state[p]
-
-    bias_correction1 = 1 - beta1 ** state['step']
-    current_lr = group['lr'] / bias_correction1
-    return current_lr
     
 class NeuralNet(nn.Module):
     """
@@ -347,7 +333,7 @@ class NeuralNet(nn.Module):
         Y = self.weights[-1](H)
         return Y	
 	
-def train(nIter,model_name,radius_input, phi_input, theta_input, sv_input, horiz_theta_input, horiz_phi_input, br_input,  model, data_rec, flow_rec, loss_rec,  lr_rec,learning_rate=0.001, lamda_f = 1000):
+def train(nIter,model_name,radius_input, phi_input, theta_input, sv_input, horiz_theta_input, horiz_phi_input, br_input,  model, data_rec, flow_rec, loss_rec,learning_rate=0.001, lamda_f = 1000):
     r"""
     Function to train model, producing horizontal flows at the CMB that 
     fit both the SV data and the flow assumptions. 
@@ -423,22 +409,17 @@ def train(nIter,model_name,radius_input, phi_input, theta_input, sv_input, horiz
         
         loss_data = criterion(sv_input*torch.sqrt(torch.sin(theta_input)), sv_pred*torch.sqrt(torch.sin(theta_input))) #SV LOSS
         loss_flows = lamda_f*criterion(tg_pred*(torch.sqrt(torch.sin(theta_input))), torch.zeros(tg_pred.shape)) #TG LOSS
-        #loss_reg = 1000*criterion(comp*torch.sqrt(torch.sin(theta_input)), torch.zeros(comp.shape)) 
-        loss = loss_data +loss_flows #+loss_reg #TOTAL LOSS
+
+        loss = loss_data +loss_flows
             
         #recording loss
         data_rec[it] = loss_data
         flow_rec[it] = loss_flows
         loss_rec[it] = loss
-        #lr_rec[it] = optimizer.state_dict()['param_groups'][0]['lr']
         
 	#Backpropagation
         loss.backward()
         optimizer.step()
-        
-        group_idx, param_idx = 0, 0
-        current_lr = get_current_lr(optimizer, group_idx, param_idx)
-        lr_rec[it] = current_lr
         
         # Print every 50 iterations
         if it % 50 == 0:
