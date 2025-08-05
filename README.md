@@ -8,3 +8,6 @@ The documentation of the current release is available [here](https://geonaomi.gi
 
 [![PyPI version](https://img.shields.io/pypi/v/pinnflow?label=PyPI%20package)](https://pypi.org/project/pinnflow/)
 
+[![Documentation Status](https://readthedocs.org/projects/pinnflow/badge/?version=latest)](https://pinnflow.readthedocs.io/en/latest/?badge=latest)
+
+
