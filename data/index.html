@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <link rel="shortcut icon" href="../img/favicon.ico" />
+    <title>Loading Data - PinnFlow Documentation</title>
+    <link rel="stylesheet" href="../css/theme.css" />
+    <link rel="stylesheet" href="../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+        <link href="../assets/_mkdocstrings.css" rel="stylesheet" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "Loading Data";
+        var mkdocs_page_input_path = "data.md";
+        var mkdocs_page_url = null;
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href=".." class="icon icon-home"> PinnFlow Documentation
+        </a>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="..">Home</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../install/">Installation</a>
+                </li>
+              </ul>
+              <ul class="current">
+                <li class="toctree-l1 current"><a class="reference internal current" href="#">Loading Data</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#arguments">Arguments</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#returns">Returns</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#notes">Notes</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#source">Source</a>
+    </li>
+    </ul>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../nn/">Defining Neural Networks</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../train/">Training</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../examples/">Examples</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../license/">License</a>
+                </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="..">PinnFlow Documentation</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href=".." class="icon icon-home" aria-label="Docs"></a></li>
+      <li class="breadcrumb-item active">Loading Data</li>
+    <li class="wy-breadcrumbs-aside">
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="loading-in-data">Loading in data</h1>
+<p>Function to compute:</p>
+<ul>
+<li>Radial Magnetic Field</li>
+<li>Secular Variation</li>
+<li>The (&theta;, &phi;) components of the horizontal divergence of the Radial Magnetic Field, </li>
+</ul>
+<p>using Gauss coefficients from <code>filename</code>. All evaluated on a <code>(dy,dx)</code> sized grid, defined by 
+co-latitudes <code>(clat1,clat2)</code> and longitudes <code>(long1, long2)</code>. Each value is then rescaled so that all components in loss 
+function are of order one. For more information on this, please see Notes.</p>
+<pre><code class="language-python">radius_data, phi_data, theta_data, Br_data, Br_dot_data, horiz_div_theta, horiz_div_phi = 
+                data_generator(file_name, year, month =1, day =1, Nmax = 13, dy = 30, dx = 55, 
+                clat1 = None, clat2 = None, long1 = None, long2 = None)
+</code></pre>
+<h3 id="arguments">Arguments</h3>
+<ul>
+<li>
+<p><code>file_name</code> : <em>string</em> </p>
+<blockquote>
+<p>Filepath and name of the MAT-file.</p>
+</blockquote>
+</li>
+<li>
+<p><code>year</code> : <em>int, ndarray</em></p>
+</li>
+<li>
+<p><code>month</code> : <em>int, ndarray</em>, optional</p>
+<blockquote>
+<p>Defaults to 1 (January).</p>
+</blockquote>
+</li>
+<li>
+<p><code>day</code> : <em>int, ndarray</em>, optional</p>
+<blockquote>
+<p>Defaults to 1.</p>
+</blockquote>
+</li>
+<li>
+<p><code>Nmax</code> : <em>int</em>, positive</p>
+<blockquote>
+<p>Maximum Degree of the Spherical Harmonic Expansion, default 13.</p>
+</blockquote>
+</li>
+<li>
+<p><code>dy</code> : <em>int</em>, positive, optional</p>
+<blockquote>
+<p>Number of grid points in the theta direction, default 30.</p>
+</blockquote>
+</li>
+<li>
+<p><code>dx</code> : <em>int</em>, positive, optional</p>
+<blockquote>
+<p>Number of grid points in the phi direction, default 55.</p>
+</blockquote>
+</li>
+<li>
+<p><code>clat1</code> : <em>ndarray, float</em></p>
+<blockquote>
+<p>Colatitude, in degrees, of the upper boundary of the grid box.</p>
+</blockquote>
+</li>
+<li>
+<p><code>clat2</code> : <em>ndarray, float</em></p>
+<blockquote>
+<p>Colatitude, in degrees, of the lower boundary of the grid box.</p>
+</blockquote>
+</li>
+<li>
+<p><code>long1</code> : <em>ndarray, float</em></p>
+<blockquote>
+<p>Longitude, in degrees, of the left boundary of the grid box.</p>
+</blockquote>
+</li>
+<li>
+<p><code>long2</code> : <em>ndarray, float</em></p>
+<blockquote>
+<p>Longitude, in degrees, of the right boundary of the grid box.</p>
+</blockquote>
+</li>
+</ul>
+<h3 id="returns">Returns</h3>
+<ul>
+<li>
+<p><code>radius_data</code>, <code>theta_data</code>, <code>phi_data</code> : <em>ndarray</em>, shape <code>(dy, dx)</code></p>
+<blockquote>
+<p>Radial, Theta, and Phi coordinates, each of shape (dx, dy).
+Theta and Phi coordinates given in radians. </p>
+</blockquote>
+</li>
+<li>
+<p><code>Br_data</code> : <em>ndarray</em>, shape <code>(dy, dx)</code></p>
+<blockquote>
+<p>Radial field component, given in &mu;T</p>
+</blockquote>
+</li>
+<li>
+<p><code>Br_data_dot</code> : <em>ndarray</em>, shape <code>(dy, dx)</code></p>
+<blockquote>
+<p>Radial Secular Variation, given in &mu;T/0.1 years</p>
+</blockquote>
+</li>
+<li>
+<p><code>horiz_div_theta</code> : <em>ndarray</em>, shape <code>(dy, dx)</code></p>
+<blockquote>
+<p>Theta component of the horizontal divergence of the radial field component, given in &mu;T/km</p>
+</blockquote>
+</li>
+<li>
+<p><code>horiz_div_phi</code> : <em>ndarray</em>, shape <code>(dy, dx)</code></p>
+<blockquote>
+<p>Phi component of the horizontal divergence of the radial field component, given in &mu;T/km</p>
+</blockquote>
+</li>
+</ul>
+<h3 id="notes">Notes</h3>
+<p>Re-scaling needed to ensure all inputs and outputs to the PINN are of the order one.
+To do this:</p>
+<ul>
+<li>
+<p>Br_data is rescaled from <em>nT</em> to <em>&mu;T</em>, which puts it at order ~1000</p>
+</li>
+<li>
+<p>Time is rescaled from year to 0.1 year</p>
+</li>
+<li>
+<p>Br_dot_data is rescaled from nT/year to &mu;T/0.1 years</p>
+</li>
+<li>
+<p>horiz_div_theta, horiz_div_phi are recaled from nT/m to &mu;T/km</p>
+</li>
+</ul>
+<h3 id="source">Source</h3>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../install/" class="btn btn-neutral float-left" title="Installation"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../nn/" class="btn btn-neutral float-right" title="Defining Neural Networks">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+    
+      <span><a href="../install/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../nn/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script src="../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "..";</script>
+    <script src="../js/theme_extra.js"></script>
+    <script src="../js/theme.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>

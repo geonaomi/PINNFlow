@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <link rel="shortcut icon" href="../img/favicon.ico" />
+    <title>Examples - PinnFlow Documentation</title>
+    <link rel="stylesheet" href="../css/theme.css" />
+    <link rel="stylesheet" href="../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+        <link href="../assets/_mkdocstrings.css" rel="stylesheet" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "Examples";
+        var mkdocs_page_input_path = "examples.md";
+        var mkdocs_page_url = null;
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href=".." class="icon icon-home"> PinnFlow Documentation
+        </a>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="..">Home</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../install/">Installation</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../data/">Loading Data</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../nn/">Defining Neural Networks</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../train/">Training</a>
+                </li>
+              </ul>
+              <ul class="current">
+                <li class="toctree-l1 current"><a class="reference internal current" href="#">Examples</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#import-modules">Import Modules</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#gpu-or-cpu">GPU or CPU</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#loading-in-data">Loading in data</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#defining-models">Defining Models</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#training">Training</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#results">Results</a>
+    </li>
+    </ul>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../license/">License</a>
+                </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="..">PinnFlow Documentation</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href=".." class="icon icon-home" aria-label="Docs"></a></li>
+      <li class="breadcrumb-item active">Examples</li>
+    <li class="wy-breadcrumbs-aside">
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="examples">Examples</h1>
+<p>This is some example code to find the horizontal flow at the CMB in a region underneath the Atlantic. This code (as well as some extra plotting scripts) is also available as a <a href="https://github.com/geonaomi/PINNFlow/blob/main/examples/Example.ipynb"> Jupyter Notebook</a> or a <a href="https://github.com/geonaomi/PINNFlow/blob/main/examples/PINNFlow_example.py"> Python Script</a>. </p>
+<h3 id="import-modules">Import Modules</h3>
+<pre><code class="language-python">import torch
+import numpy as np
+import matplotlib.pyplot as plt
+import pinnflow as pf
+import cartopy.crs as ccrs
+import cartopy.feature as cfeature
+from sklearn.metrics import mean_squared_error
+import time
+import warnings
+warnings.filterwarnings('ignore')
+</code></pre>
+<h3 id="gpu-or-cpu">GPU or CPU</h3>
+<p>The following code snippet allows you to train on a GPU, if you have one, or else defaults to a CPU. GPU training is faster, but CPUs can still be used if this is not available.</p>
+<pre><code class="language-python">device = torch.device(&quot;cuda:0&quot; if torch.cuda.is_available() else &quot;cpu&quot;)
+</code></pre>
+<h3 id="loading-in-data">Loading in data</h3>
+<p>For this example, we are wanting to study an area in the Atlantic, at spherical harmonic degree 13, on the 1st January 2024. To do this, we will use the CHAOS-8.1 model, but any Geomagnetic Field model can be used if it is in the same format. We then supply the path to the MAT-file, and then use the <code>data_generator</code> function to calculate the values on a grid.  </p>
+<pre><code class="language-python">#Path to MAT-File
+mat_file = &quot;CHAOS-8.1.mat&quot;
+#Loading in data from CHAOS, 1st Jan 2024, degree 13, on a (30,55) grid over the Atlantic. 
+#Change clat and long variables if you would like to change the region, (dy,dx)  if you would like to change the number of points.
+radius_data, phi_data, theta_data, Br_data, Br_dot_data, Br_div_theta_data , Br_div_phi_data = pf.data_generator(mat_file, 2024, 1, 1, 13,  dy = 30 , dx = 55, clat1 = 55,clat2 = 85, long1 = -50, long2 = 5)
+</code></pre>
+<p>PyTorch requires that each of the input are flattened and in <a href = "https://pytorch.org/docs/stable/tensors.html"> torch.Tensor </a> format, so we do that:</p>
+<pre><code class="language-python"># Flattening grid points
+theta = theta_data.flatten()[:,None]
+phi = phi_data.flatten()[:,None]
+radius = 3485*np.ones(theta.shape)
+PHI,THETA = np.meshgrid(phi, theta)
+coord =  np.hstack((phi.flatten()[:,None], theta.flatten()[:,None])) 
+
+# Flattening training data
+sv_star = Br_dot_data.flatten()[:, None]
+br_star = Br_data.flatten()[:, None]
+horiz_theta_star = Br_div_theta_data.flatten()[:, None]
+horiz_phi_star = Br_div_phi_data.flatten()[:, None]
+
+#converting to torch.Tensor, if this is not done this will be done in PINNFlow automatically
+radius_tf = torch.tensor(radius, requires_grad=True).float()
+theta_tf = torch.tensor(theta, requires_grad=True).float()
+phi_tf = torch.tensor(phi, requires_grad=True).float()
+br_tf = torch.tensor(br_star, requires_grad=True).float()
+sv_tf = torch.tensor(sv_star, requires_grad=True).float()
+horiz_theta_tf = torch.tensor(horiz_theta_star, requires_grad=True).float()
+horiz_phi_tf = torch.tensor(horiz_phi_star, requires_grad=True).float()
+</code></pre>
+<p><img alt="Input" src="../input.png" /> </p>
+<h3 id="defining-models">Defining Models</h3>
+<p>We define the blank model from the layers and the upper and lower bound for the coordinate system. The model weights are initialised 
+using <a href = "https://proceedings.mlr.press/v9/glorot10a/glorot10a.pdf"> Xavier Initialisation. </a></p>
+<pre><code class="language-python">#Layers for NN, has to start and end with 2 for (theta, phi)
+layers = [2, 40, 40, 40, 40, 40, 40, 40, 40, 2]
+
+lb = coord.min(0) #Lower Bound for coordinate system 
+ub = coord.max(0) #Upper Bound for coordinate system 
+
+model = pf.NeuralNet(layers, lb, ub) #Defining blank NN model for T, P
+</code></pre>
+<h3 id="training">Training</h3>
+<p>We define the number of training iterations, and empty arrays to record the loss:</p>
+<pre><code class="language-python">Train_iterations = 10000 #can be changed, value used in paper is 100_000 to ensure convergence
+
+loss_record = np.zeros(Train_iterations) #Total Loss
+loss_data_record = np.zeros(Train_iterations) #SV Loss
+loss_flows_record = np.zeros(Train_iterations) #Flow Constraint Loss
+</code></pre>
+<p>We then train the network using:</p>
+<pre><code class="language-python">tf.rain(Train_iterations, &quot;model_name&quot;, radius_tf, phi_tf, theta_tf, sv_tf, 
+        horiz_theta_tf, horiz_phi_tf,br_tf,  model, 
+        loss_data_record, loss_flows_record, loss_record)
+</code></pre>
+<p>We can then plot the loss curves using:</p>
+<pre><code class="language-python">plt.rcParams.update({'font.size': 25})
+fig, (ax1, ax2,ax3) = plt.subplots(1,3, figsize=(30,10))
+ax1.semilogy(loss_data_record, color = 'blue')
+ax2.semilogy(loss_flows_record, color = 'red')
+ax3.semilogy(loss_record, color = 'green')
+ax1.set_title(&quot;$L_{SV}$ \n&quot;, size = 45)
+ax2.set_title(&quot;$L_{FC}$ \n&quot;, size = 45)
+ax3.set_title(&quot;$L_{TOTAL}$ \n&quot;, size = 45)
+
+fig.supxlabel('Iteration', size = 40)
+fig.supylabel('Loss \n', size = 40)
+plt.tight_layout(pad=1)
+</code></pre>
+<p><img alt="Loss Curves" src="../loss.png" /> </p>
+<h3 id="results">Results</h3>
+<p>Load in the model with the lowest loss, and then evaluate the trained model values on our grid:</p>
+<pre><code class="language-python">model = torch.load(&quot;test_model.pt&quot;, weights_only=False) #Loading in 'Best Model'
+
+#evaluating trained model values
+u_theta_flat, u_phi_flat, div_flat, sv_flat, tg_flat, cond = pf.PINNFlow(radius_tf, phi_tf, theta_tf,  horiz_theta_tf, horiz_phi_tf,br_tf, model).net_sv()
+#detaching from cuda, converting to numpy, reshaping to original grid and removing 5 degree border
+u_theta = -u_theta_flat.flatten().detach().numpy().reshape(Br_dot_data.shape)[5:-5, 5:-5]*10
+u_phi = u_phi_flat.flatten().detach().numpy().reshape(Br_dot_data.shape)[5:-5, 5:-5]*10
+sv_pred = sv_flat.flatten().detach().numpy().reshape(Br_dot_data.shape)[5:-5, 5:-5]*1e4
+
+</code></pre>
+<p>Plotting these results:</p>
+<p><img alt="flows" src="../perf_flows.png" /> </p>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../train/" class="btn btn-neutral float-left" title="Training"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../license/" class="btn btn-neutral float-right" title="License">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+    
+      <span><a href="../train/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../license/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script src="../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "..";</script>
+    <script src="../js/theme_extra.js"></script>
+    <script src="../js/theme.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>
