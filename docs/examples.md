@@ -8,7 +8,7 @@ This is some example code to find the horizontal flow at the CMB in a region und
 import torch
 import numpy as np
 import matplotlib.pyplot as plt
-from PINNFlow import *
+import pinnflow as pf
 import cartopy.crs as ccrs
 import cartopy.feature as cfeature
 from sklearn.metrics import mean_squared_error
@@ -33,7 +33,7 @@ For this example, we are wanting to study an area in the Atlantic, at spherical 
 mat_file = "CHAOS-8.1.mat"
 #Loading in data from CHAOS, 1st Jan 2024, degree 13, on a (30,55) grid over the Atlantic. 
 #Change clat and long variables if you would like to change the region, (dy,dx)  if you would like to change the number of points.
-radius_data, phi_data, theta_data, Br_data, Br_dot_data, Br_div_theta_data , Br_div_phi_data = data_generator(mat_file, 2024, 1, 1, 13,  dy = 30 , dx = 55, clat1 = 55,clat2 = 85, long1 = -50, long2 = 5)
+radius_data, phi_data, theta_data, Br_data, Br_dot_data, Br_div_theta_data , Br_div_phi_data = pf.data_generator(mat_file, 2024, 1, 1, 13,  dy = 30 , dx = 55, clat1 = 55,clat2 = 85, long1 = -50, long2 = 5)
 ```
 
 PyTorch requires that each of the input are flattened and in <a href = "https://pytorch.org/docs/stable/tensors.html"> torch.Tensor </a> format, so we do that:
@@ -75,7 +75,7 @@ layers = [2, 40, 40, 40, 40, 40, 40, 40, 40, 2]
 lb = coord.min(0) #Lower Bound for coordinate system 
 ub = coord.max(0) #Upper Bound for coordinate system 
 
-model = NeuralNet(layers, lb, ub) #Defining blank NN model for T, P
+model = pf.NeuralNet(layers, lb, ub) #Defining blank NN model for T, P
 ```
 
 ### Training 
@@ -93,7 +93,7 @@ loss_flows_record = np.zeros(Train_iterations) #Flow Constraint Loss
 We then train the network using:
 
 ```python
-train(Train_iterations, "model_name", radius_tf, phi_tf, theta_tf, sv_tf, 
+tf.rain(Train_iterations, "model_name", radius_tf, phi_tf, theta_tf, sv_tf, 
         horiz_theta_tf, horiz_phi_tf,br_tf,  model, 
         loss_data_record, loss_flows_record, loss_record)
 ```
@@ -125,7 +125,7 @@ Load in the model with the lowest loss, and then evaluate the trained model valu
 model = torch.load("test_model.pt", weights_only=False) #Loading in 'Best Model'
 
 #evaluating trained model values
-u_theta_flat, u_phi_flat, div_flat, sv_flat, tg_flat, cond = PINNFlow(radius_tf, phi_tf, theta_tf,  horiz_theta_tf, horiz_phi_tf,br_tf, model).net_sv()
+u_theta_flat, u_phi_flat, div_flat, sv_flat, tg_flat, cond = pf.PINNFlow(radius_tf, phi_tf, theta_tf,  horiz_theta_tf, horiz_phi_tf,br_tf, model).net_sv()
 #detaching from cuda, converting to numpy, reshaping to original grid and removing 5 degree border
 u_theta = -u_theta_flat.flatten().detach().numpy().reshape(Br_dot_data.shape)[5:-5, 5:-5]*10
 u_phi = u_phi_flat.flatten().detach().numpy().reshape(Br_dot_data.shape)[5:-5, 5:-5]*10
