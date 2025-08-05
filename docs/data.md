@@ -12,7 +12,7 @@ function are of order one. For more information on this, please see Notes.
 
 
 ```python
-radius_DATA, phi_data, theta_data, Br_data, Br_dot_data, horiz_div_theta, horiz_div_phi = 
+radius_data, phi_data, theta_data, Br_data, Br_dot_data, horiz_div_theta, horiz_div_phi = 
                 data_generator(file_name, year, month =1, day =1, Nmax = 13, dy = 30, dx = 55, 
                 clat1 = None, clat2 = None, long1 = None, long2 = None)
 ```

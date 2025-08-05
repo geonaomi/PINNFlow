@@ -5,6 +5,7 @@ theme:
 
 plugins:
 - mkdocstrings:
+    default_handler: python
     handlers:
       python:
         paths: [src]  # search packages in the src folder
