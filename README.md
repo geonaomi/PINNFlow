@@ -6,4 +6,5 @@ PINNFlow is a code for regional outer core flow inversion, using Physics-Informe
 
 The documentation of the current release is available [here](https://geonaomi.github.io/PINNFlow/). 
 
-![PyPI version](https://img.shields.io/pypi/v/your-package-name?label=PyPI%20package)](https://pypi.org/project/pinnflow/)
+[![PyPI version](https://img.shields.io/pypi/v/pinnflow?label=PyPI%20package)](https://pypi.org/project/pinnflow/)
+
