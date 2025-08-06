@@ -1,5 +1,7 @@
 # Overview
 
+[![PyPI version](https://img.shields.io/pypi/v/pinnflow?label=PyPI%20package)](https://pypi.org/project/pinnflow/) [![Docs](https://img.shields.io/badge/docs-online-green.svg)](https://geonaomi.github.io/PINNFlow/) [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
+
 PINNFlow is a code for regional outer core flow inversion, using Physics-Informed Neural Networks in a PyTorch framework. If you use this code, please [cite this paper](https://arxiv.org/abs/2504.02566).
 
 # Installation 
@@ -23,6 +25,6 @@ PINNFlow relies on the following:
 
 The documentation of the current release is available [here](https://geonaomi.github.io/PINNFlow/). 
 
-[![PyPI version](https://img.shields.io/pypi/v/pinnflow?label=PyPI%20package)](https://pypi.org/project/pinnflow/) [![Docs](https://img.shields.io/badge/docs-online-green.svg)](https://geonaomi.github.io/PINNFlow/) [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
+
 
 
