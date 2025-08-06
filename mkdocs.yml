@@ -1,5 +1,5 @@
 site_name: PinnFlow Documentation
-site_url: pinnflow.readthedocs.io
+
 theme:
   name: "readthedocs"
 
