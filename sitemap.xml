@@ -1,3 +1,31 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+    <url>
+         <loc>http://pinnflow.readthedocs.io/</loc>
+         <lastmod>2025-08-06</lastmod>
+    </url>
+    <url>
+         <loc>http://pinnflow.readthedocs.io/data/</loc>
+         <lastmod>2025-08-06</lastmod>
+    </url>
+    <url>
+         <loc>http://pinnflow.readthedocs.io/examples/</loc>
+         <lastmod>2025-08-06</lastmod>
+    </url>
+    <url>
+         <loc>http://pinnflow.readthedocs.io/install/</loc>
+         <lastmod>2025-08-06</lastmod>
+    </url>
+    <url>
+         <loc>http://pinnflow.readthedocs.io/license/</loc>
+         <lastmod>2025-08-06</lastmod>
+    </url>
+    <url>
+         <loc>http://pinnflow.readthedocs.io/nn/</loc>
+         <lastmod>2025-08-06</lastmod>
+    </url>
+    <url>
+         <loc>http://pinnflow.readthedocs.io/train/</loc>
+         <lastmod>2025-08-06</lastmod>
+    </url>
 </urlset>
