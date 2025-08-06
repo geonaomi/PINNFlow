@@ -1,6 +1,5 @@
 site_name: PinnFlow Documentation
-site_url: http://pinnflow.readthedocs.io/
-repo_url: https://github.com/geonaomi/PINNFlow?tab=readme-ov-file
+site_url: pinnflow.readthedocs.io
 theme:
   name: "readthedocs"
 
